@@ -8,12 +8,13 @@ class NotebookCover extends StatelessWidget {
   final Notebook notebook;
   final VoidCallback onTap;
   final VoidCallback onFavorite;
-
+  final ValueChanged<String> onMenuSelected;
   const NotebookCover({
     super.key,
     required this.notebook,
     required this.onTap,
     required this.onFavorite,
+    required this.onMenuSelected,
   });
 
   @override
@@ -124,16 +125,101 @@ class NotebookCover extends StatelessWidget {
                   Positioned(
                     right: 4,
                     top: 4,
-                    child: IconButton(
-                      tooltip: 'Favorite',
-                      onPressed: onFavorite,
-                      icon: Icon(
-                        notebook.isFavorite
-                            ? Icons.favorite
-                            : Icons.favorite_border,
-                        color: inkColor,
-                        size: 20,
-                      ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          tooltip: 'Favorite',
+                          onPressed: onFavorite,
+                          icon: Icon(
+                            notebook.isFavorite
+                                ? Icons.favorite
+                                : Icons.favorite_border,
+                            color: inkColor,
+                            size: 20,
+                          ),
+                        ),
+
+                        PopupMenuButton<String>(
+                          tooltip: 'Notebook options',
+                          icon: Icon(
+                            Icons.more_vert,
+                            color: inkColor,
+                            size: 20,
+                          ),
+                          color: AppColors.ivory,
+                          onSelected: onMenuSelected,
+                          itemBuilder: (context) => [
+                            const PopupMenuItem(
+                              value: 'open',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.menu_book_outlined),
+                                  SizedBox(width: 12),
+                                  Text('Open notebook'),
+                                ],
+                              ),
+                            ),
+
+                            const PopupMenuItem(
+                              value: 'edit',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.edit_outlined),
+                                  SizedBox(width: 12),
+                                  Text('Edit notebook'),
+                                ],
+                              ),
+                            ),
+
+                            const PopupMenuItem(
+                              value: 'duplicate',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.copy_outlined),
+                                  SizedBox(width: 12),
+                                  Text('Duplicate'),
+                                ],
+                              ),
+                            ),
+
+                            PopupMenuItem(
+                              value: 'favorite',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    notebook.isFavorite
+                                        ? Icons.favorite
+                                        : Icons.favorite_border,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    notebook.isFavorite
+                                        ? 'Remove from favorites'
+                                        : 'Add to favorites',
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            const PopupMenuDivider(),
+
+                            const PopupMenuItem(
+                              value: 'delete',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.delete_outline, color: Colors.red),
+                                  SizedBox(width: 12),
+                                  Text(
+                                    'Delete notebook',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                 ],

@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 
 class Notebook {
   final String id;
-  final String title;
-  final String subject;
-  final Color coverColor;
+  String title;
+  String subject;
+  Color coverColor;
   final DateTime createdAt;
 
+  DateTime? lastOpened;
   bool isFavorite;
 
   Notebook({
@@ -15,6 +16,7 @@ class Notebook {
     required this.subject,
     required this.coverColor,
     required this.createdAt,
+    this.lastOpened,
     this.isFavorite = false,
   });
 
@@ -25,6 +27,7 @@ class Notebook {
       'subject': subject,
       'coverColor': coverColor.toARGB32(),
       'createdAt': createdAt.toIso8601String(),
+      'lastOpened': lastOpened?.toIso8601String(),
       'isFavorite': isFavorite,
     };
   }
@@ -36,6 +39,9 @@ class Notebook {
       subject: json['subject'] as String,
       coverColor: Color(json['coverColor'] as int),
       createdAt: DateTime.parse(json['createdAt'] as String),
+      lastOpened: json['lastOpened'] == null
+          ? null
+          : DateTime.parse(json['lastOpened'] as String),
       isFavorite: json['isFavorite'] as bool? ?? false,
     );
   }
