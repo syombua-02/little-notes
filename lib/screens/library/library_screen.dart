@@ -6,7 +6,8 @@ import '../../core/constants/app_colors.dart';
 import '../../models/notebook.dart';
 import '../../widgets/notebook_cover.dart';
 import '../../services/notebook_storage.dart';
-
+import '../writing_studio/writing_screen.dart';
+import '../../models/notebook_page.dart';
 class LibraryScreen extends StatefulWidget {
   const LibraryScreen({super.key});
 
@@ -404,26 +405,41 @@ class _LibraryScreenState extends State<LibraryScreen> {
     subjectController.dispose();
   }
 
-  void duplicateNotebook(Notebook notebook) {
-    setState(() {
-      notebooks.add(
-        Notebook(
-          id: const Uuid().v4(),
-          title: '${notebook.title} (Copy)',
-          subject: notebook.subject,
-          coverColor: notebook.coverColor,
-          createdAt: DateTime.now(),
-          isFavorite: notebook.isFavorite,
-        ),
-      );
-    });
+  
+void duplicateNotebook(Notebook notebook) {
+  final copiedPages = notebook.pages.map((page) {
+    final data = page.toJson();
 
-    saveNotebooks();
+    data['id'] = const Uuid().v4();
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Notebook duplicated successfully.')),
+    return NotebookPage.fromJson(data);
+  }).toList();
+
+  setState(() {
+    notebooks.add(
+      Notebook(
+        id: const Uuid().v4(),
+        title: '${notebook.title} (Copy)',
+        subject: notebook.subject,
+        coverColor: notebook.coverColor,
+        createdAt: DateTime.now(),
+        isFavorite: notebook.isFavorite,
+        pages: copiedPages,
+      ),
     );
-  }
+  });
+
+  saveNotebooks();
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Text(
+        'Notebook duplicated successfully.',
+      ),
+    ),
+  );
+}
+
 
   Future<void> deleteNotebook(Notebook notebook) async {
     final confirmed = await showDialog<bool>(
@@ -556,19 +572,38 @@ class _LibraryScreenState extends State<LibraryScreen> {
     );
   }
 
-  void openNotebook(Notebook notebook) {
-    setState(() {
-      notebook.lastOpened = DateTime.now();
-    });
+  
+Future<void> openNotebook(Notebook notebook) async {
+  setState(() {
+    notebook.lastOpened = DateTime.now();
+  });
 
-    saveNotebooks();
+  await saveNotebooks();
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${notebook.title} — writing studio coming next.'),
-      ),
-    );
-  }
+  if (!mounted) return;
+
+  await Navigator.push<void>(
+    context,
+    MaterialPageRoute(
+      builder: (context) {
+        return WritingScreen(
+          notebook: notebook,
+          onSave: () async {
+            await NotebookStorage.saveNotebooks(
+              notebooks,
+            );
+          },
+        );
+      },
+    ),
+  );
+
+  if (!mounted) return;
+
+  setState(() {});
+  await saveNotebooks();
+}
+
 
   Widget buildLibrary() {
     final visibleNotebooks = filteredNotebooks;
@@ -707,7 +742,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
                         saveNotebooks();
                       },
                     );
-.                  }, childCount: visibleNotebooks.length),
+
+-.            }, childCount: visibleNotebooks.length),
                 ),
               ),
           ],

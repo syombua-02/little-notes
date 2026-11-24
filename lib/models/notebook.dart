@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
+
+import 'notebook_page.dart';
 
 class Notebook {
   final String id;
@@ -10,6 +13,8 @@ class Notebook {
   DateTime? lastOpened;
   bool isFavorite;
 
+  List<NotebookPage> pages;
+
   Notebook({
     required this.id,
     required this.title,
@@ -18,7 +23,10 @@ class Notebook {
     required this.createdAt,
     this.lastOpened,
     this.isFavorite = false,
-  });
+    List<NotebookPage>? pages,
+  }) : pages = pages == null || pages.isEmpty
+           ? [NotebookPage(id: const Uuid().v4())]
+           : pages;
 
   Map<String, dynamic> toJson() {
     return {
@@ -29,6 +37,7 @@ class Notebook {
       'createdAt': createdAt.toIso8601String(),
       'lastOpened': lastOpened?.toIso8601String(),
       'isFavorite': isFavorite,
+      'pages': pages.map((page) => page.toJson()).toList(),
     };
   }
 
@@ -43,6 +52,11 @@ class Notebook {
           ? null
           : DateTime.parse(json['lastOpened'] as String),
       isFavorite: json['isFavorite'] as bool? ?? false,
+      pages: (json['pages'] as List?)
+          ?.map(
+            (page) => NotebookPage.fromJson(Map<String, dynamic>.from(page)),
+          )
+          .toList(),
     );
   }
 }
